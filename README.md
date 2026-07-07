@@ -2,7 +2,9 @@
 
 Panel web en tiempo real que analiza el comportamiento de potencia reactiva por planta de generación (varianza y valor medio sobre los últimos 20 minutos), recalculado cada 3 segundos y transmitido por WebSocket a todos los navegadores conectados.
 
-Actualmente los datos se leen de `BD_Prueba.xlsx` (fuente dummy para simular datos reales).
+Actualmente los datos se leen de `BD_Prueba.xlsx` (fuente dummy para simular datos reales). Si el archivo no existe, el proyecto genera datos aleatorios automáticamente.
+
+> 🚀 **¿Solo quieres levantar el servidor?** Sigue la **[GUIA_EJECUCION.md](GUIA_EJECUCION.md)**: comandos paso a paso según tu terminal (CMD, PowerShell o Git Bash) y según si es la primera vez o ya lo tienes instalado.
 
 ## Entorno virtual (Python)
 
