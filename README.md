@@ -28,6 +28,12 @@ Y luego vuelve a activar:
 .\.venv\Scripts\Activate.ps1
 ```
 
+#### CMD (Símbolo del sistema de Windows)
+
+```cmd
+.venv\Scripts\activate.bat
+```
+
 #### Git Bash
 
 ```bash
