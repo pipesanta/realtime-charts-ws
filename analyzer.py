@@ -2,7 +2,23 @@
 # reactiva en los últimos 20 minutos. Este es el único lugar donde se hace el
 # análisis; main.py solo lo invoca y reparte el resultado (self.df) a los clientes.
 import datetime as dt
+import random
+
 import pandas as pd
+
+# Nombre del archivo Excel que hace de fuente de datos "real". Si no existe,
+# el análisis se alimenta de datos aleatorios (ver generate_random_data).
+EXCEL_FILENAME = "BD_Prueba.xlsx"
+
+# Plantas simuladas cuando no hay Excel. La lista es fija para que las gráficas
+# muestren siempre las mismas series (solo cambian sus valores en cada cálculo).
+PLANTAS_SIMULADAS = [
+    "Planta Norte",
+    "Planta Sur",
+    "Planta Este",
+    "Planta Oeste",
+    "Planta Central",
+]
 
 
 class BehaviorAnalyzer():
@@ -27,12 +43,47 @@ class BehaviorAnalyzer():
     # Lee el Excel (una hoja por planta) y deja la columna "Hora" lista para comparar.
     # Esta es la única función que sabe de dónde vienen los datos: si mañana se
     # reemplaza el Excel por una base de datos, solo hay que cambiar esta función.
+    # Si el archivo no existe, se cae hacia datos aleatorios para que el proyecto
+    # se pueda ejecutar y demostrar sin necesidad de tener el Excel.
     def extract_data_from_excel(self):
-        excel_data = {sheet: contend for sheet, contend in pd.read_excel("BD_Prueba.xlsx", sheet_name=None).items()}
+        try:
+            raw_sheets = pd.read_excel(EXCEL_FILENAME, sheet_name=None)
+        except FileNotFoundError:
+            print(f"[analyzer] '{EXCEL_FILENAME}' no encontrado: usando datos aleatorios simulados.")
+            return self.generate_random_data()
+
+        excel_data = {sheet: contend for sheet, contend in raw_sheets.items()}
         for gen_unit, data_df in excel_data.items():
             data_df["Hora"] = pd.to_datetime(data_df['Hora'], format='%H:%M:%S').dt.time
             excel_data[gen_unit] = data_df
         return excel_data
+
+    # Genera datos aleatorios con el mismo esquema que cada hoja del Excel
+    # (columnas Hora, Valor, DeltaSeg, FechaHora), una entrada por planta. Cubre
+    # los últimos 20 minutos con muestras cada pocos segundos, de modo que el
+    # resto del análisis funcione exactamente igual que con datos reales.
+    def generate_random_data(self):
+        now = dt.datetime.now()
+        window_start = now - dt.timedelta(minutes=20)
+        data = {}
+        for planta in PLANTAS_SIMULADAS:
+            # Cada planta tiene un nivel base y una amplitud de ruido distintos,
+            # así su varianza y valor medio salen diferentes (gráficas variadas).
+            base = random.uniform(50, 200)
+            amplitud = random.uniform(2, 40)
+            registros = []
+            momento = window_start
+            while momento <= now:
+                delta_seg = random.randint(5, 15)  # segundos hasta la próxima muestra
+                registros.append({
+                    "FechaHora": momento,
+                    "Hora": momento.time(),
+                    "Valor": round(base + random.uniform(-amplitud, amplitud), 2),
+                    "DeltaSeg": delta_seg,
+                })
+                momento += dt.timedelta(seconds=delta_seg)
+            data[planta] = pd.DataFrame(registros)
+        return data
 
     # Calcula la varianza (qué tanto se aleja el valor de su promedio) y el valor
     # medio de potencia reactiva para una planta, usando integración simple (área bajo la curva).
