@@ -4,6 +4,8 @@
 import asyncio
 import datetime as dt
 import json
+import socket
+import sys
 from collections import deque
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
@@ -81,9 +83,52 @@ async def broadcast_loop():
         await asyncio.sleep(UPDATE_INTERVAL_SECONDS)
 
 
+# Averigua la IP de esta PC en la red local (la que ven los demás equipos de la
+# oficina). Abre un socket "hacia afuera" sin enviar nada: el sistema operativo
+# elige la interfaz de red real y de ahí sacamos su IP. Si algo falla, cae a localhost.
+def get_local_ip() -> str:
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
+    except Exception:
+        return "127.0.0.1"
+    finally:
+        s.close()
+
+
+# Lee el puerto de los argumentos con los que se lanzó uvicorn (--port N).
+# Si no se especifica, uvicorn usa 8000 por defecto, así que asumimos ese.
+def get_port() -> int:
+    argv = sys.argv
+    for flag in ("--port", "-p"):
+        if flag in argv:
+            try:
+                return int(argv[argv.index(flag) + 1])
+            except (IndexError, ValueError):
+                pass
+    return 8000
+
+
+# Imprime en consola las URLs para abrir el panel: la local (esta misma PC) y la
+# de red (para compartir con los demás de la oficina usando la IP de esta PC).
+def print_startup_urls():
+    port = get_port()
+    ip = get_local_ip()
+    print("\n" + "=" * 52)
+    print("  Servidor PruebaQQ en marcha")
+    print("-" * 52)
+    print(f"  Local (esta PC):     http://localhost:{port}")
+    print(f"  Red (oficina):       http://{ip}:{port}")
+    print("=" * 52)
+    print("  Comparte la URL de 'Red' con los demas equipos de")
+    print("  la oficina (deben estar en la misma red local).\n", flush=True)
+
+
 # Arranca broadcast_loop en segundo plano apenas el servidor queda listo.
 @app.on_event("startup")
 async def startup_event():
+    print_startup_urls()
     asyncio.create_task(broadcast_loop())
 
 
