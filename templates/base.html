@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>{% block title %}Panel de Análisis{% endblock %}</title>
+<link rel="stylesheet" href="/static/css/style.css">
+{% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-brand">Panel de Análisis</div>
+        <ul class="nav-links">
+            <li><a href="/" class="{{ 'activo' if activo == 'inicio' else '' }}">Inicio</a></li>
+            <li><a href="/varianza" class="{{ 'activo' if activo == 'varianza' else '' }}">Varianza</a></li>
+            <li><a href="/varianza-chartjs" class="{{ 'activo' if activo == 'varianza-chartjs' else '' }}">Varianza (Chart.js)</a></li>
+            <li><a href="/valores-medios" class="{{ 'activo' if activo == 'valores-medios' else '' }}">Valores Medios</a></li>
+        </ul>
+    </nav>
+
+    <main class="contenido">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

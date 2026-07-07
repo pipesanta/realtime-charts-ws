@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Varianza (Chart.js){% endblock %}
+
+{% block content %}
+<h1>Análisis de Varianza en Tiempo Real (Chart.js)</h1>
+<div id="estado" class="desconectado">Conectando...</div>
+<div class="grafica-contenedor">
+    <canvas id="grafica"></canvas>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="/static/js/varianza_chartjs.js"></script>
+{% endblock %}
